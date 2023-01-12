@@ -14,7 +14,7 @@ import Int "mo:base/Int";
 import Int32 "mo:base/Int32";
 import Nat32 "mo:base/Nat32";
 import JSON "JSON";
-import Request "../treasury/models/Request";
+import Request "../dao/models/Request";
 import Proposal "../dao/models/Proposal";
 import Vote "../dao/models/Vote";
 import SHA "./SHA";

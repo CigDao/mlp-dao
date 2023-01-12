@@ -246,34 +246,6 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
     }
   };
 
-  public shared({caller}) func executeProposal(): async () {
-    ignore _topUp();
-    let exist = proposal;
-    let now = Time.now();
-    let controller = Principal.fromText(Constants.controllerCanister);
-    assert(caller == controller);
-    switch(exist){
-      case(?exist){
-        switch(exist){
-          case(#upgrade(value)){
-            await _tally();
-          };
-          case(#treasury(value)){
-            await _tally();
-          };
-          case(#treasuryAction(value)){
-            await _tally();
-          };
-          case(#proposalCost(value)){
-            await _tally();
-          }
-        }
-      };
-      case(null){
-      }
-    };
-  };
-
   public shared({caller}) func createProposal(request:ProposalRequest): async TokenService.TxReceipt {
     ignore _topUp();
     switch(proposal){
@@ -421,8 +393,8 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
     let currentId = voteId;
     voteId := voteId+1;
     votes.put(voteId,vote);
-    _vote(proposalId, power, yay);
     _addVoteToProposal(proposalId, vote);
+    ignore _vote(proposalId, power, yay);
     #Ok(Nat32.toNat(currentId));
   };
 
@@ -447,7 +419,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
     };
   };
 
-  private func _vote(proposalId:Nat32, power:Float, yay:Bool) {
+  private func _vote(proposalId:Nat32, power:Float, yay:Bool): async () {
     let exist = proposal;
     switch(exist){
       case(?exist){
@@ -489,7 +461,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
                 timeStamp = value.timeStamp;
               };
               proposal := ?#upgrade(_proposal);
-            }
+            };
           };
           case(#treasury(value)){
             if(yay){
@@ -592,7 +564,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
 
       };
     };
-
+     ignore _tally();
   };
 
   private func _addVoteToProposal(proposalId:Nat32, vote:Vote) {

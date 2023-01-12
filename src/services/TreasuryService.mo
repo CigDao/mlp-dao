@@ -3,7 +3,7 @@ import Utils "../helpers/Utils";
 import Nat64 "mo:base/Nat64";
 import Constants "../Constants";
 import Result "mo:base/Result";
-import Request "../treasury/models/Request";
+import Request "../dao/models/Request";
 
 module {
 

@@ -1,6 +1,6 @@
 import Blob "mo:base/Blob";
 import Time "mo:base/Time";
-import Request "../../treasury/models/Request";
+import Request "../models/Request";
 
 module {
 
