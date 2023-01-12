@@ -10,7 +10,6 @@ module {
         #upgrade:Upgrade;
         #treasury:Treasury;
         #treasuryAction:TreasuryAction;
-        #tax:Tax;
         #proposalCost:ProposalCost;
     };
 
@@ -18,42 +17,13 @@ module {
         #upgrade:UpgradeRequest;
         #treasury:TreasuryRequest;
         #treasuryAction:TreasuryActionRequest;
-        #tax:TaxRequest;
         #proposalCost:ProposalCostRequest;
-    };
-
-    public type TaxType = {
-        #transaction:Float;
-        #burn:Float;
-        #reflection:Float;
-        #treasury:Float;
-        #marketing:Float;
-        #maxHolding:Float;
-    };
-
-    public type TaxRequest = {
-        taxType:TaxType;
-        title:Text;
-        description:Text;
     };
 
     public type ProposalCostRequest = {
         amount:Nat;
         title:Text;
         description:Text;
-    };
-
-    public type Tax = {
-        id:Nat32;
-        creator:Text;
-        taxType:TaxType;
-        title:Text;
-        description:Text;
-        yay:Nat;
-        nay:Nat;
-        executed:Bool;
-        executedAt:?Time.Time;
-        timeStamp:Time.Time;
     };
 
     public type ProposalCost = {

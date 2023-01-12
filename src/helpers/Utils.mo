@@ -24,9 +24,6 @@ import Hex "./Hex";
 import TrieMap "mo:base/TrieMap";
 import Nat8 "mo:base/Nat8";
 import SwapService "../services/SwapService";
-import TokenService "../services/TokenService";
-import WICPService "../services/WICPService";
-
 
 module {
 
@@ -631,102 +628,6 @@ module {
                     };
                     case(#Slippage(value)){
                         "Slippage: " #Nat.toText(value)
-                    };
-                }
-            };
-        }
-    };
-
-    public func ycTxReceiptToText(value: TokenService.TxReceipt): Text {
-        switch(value){
-            case(#Ok(value)){
-                ""
-            };
-            case(#Err(value)){
-                switch(value){
-                    case(#InsufficientAllowance){
-                        "InsufficientAllowance"
-                    };
-                    case(#InsufficientBalance){
-                        "InsufficientBalance"
-                    };
-                    case(#ErrorOperationStyle){
-                        "ErrorOperationStyle"
-                    };
-                    case(#Unauthorized){
-                        "Unauthorized"
-                    };
-                    case(#LedgerTrap){
-                        "LedgerTrap"
-                    };
-                    case(#ErrorTo){
-                        "ErrorTo"
-                    };
-                    case(#Other(value)){
-                        value
-                    };
-                    case(#BlockUsed){
-                        "BlockUsed"
-                    };
-                    case(#ActiveProposal){
-                        "ActiveProposal"
-                    };
-                    case(#AmountTooSmall){
-                        "AmountTooSmall"
-                    };
-                }
-            };
-        }
-    };
-
-    public func wicpTxReceiptToText(value: WICPService.TxReceipt): Text {
-        switch(value){
-            case(#Ok(value)){
-                ""
-            };
-            case(#Err(value)){
-                switch(value){
-                    case(#InsufficientAllowance){
-                        "InsufficientAllowance"
-                    };
-                    case(#InsufficientBalance){
-                        "InsufficientBalance"
-                    };
-                    case(#ErrorOperationStyle){
-                        "ErrorOperationStyle"
-                    };
-                    case(#Unauthorized){
-                        "Unauthorized"
-                    };
-                    case(#NoRound){
-                        "NoRound"
-                    };
-                    case(#LedgerTrap){
-                        "LedgerTrap"
-                    };
-                    case(#ErrorTo){
-                        "ErrorTo"
-                    };
-                    case(#Other){
-                        "Other"
-                    };
-                    case(#BlockUsed){
-                        "BlockUsed"
-                    };
-                    case(#FetchRateFailed){
-                        "FetchRateFailed"
-                    };
-                    case(#NotifyDfxFailed){
-                        "NotifyDfxFailed"
-                    };
-                    case(#UnexpectedCyclesResponse){
-                        "UnexpectedCyclesResponse"
-                    };
-                    case(#AmountTooSmall){
-                        "AmountTooSmall"
-                    };
-                    case(#InsufficientXTCFee){
-                        "InsufficientXTCFee"
                     };
                 }
             };
