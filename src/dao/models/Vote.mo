@@ -5,7 +5,7 @@ module {
         proposalId:Nat32;
         yay:Bool;
         member:Text;
-        power:Nat;
+        power:Float;
         timeStamp:Time.Time;
     }
 }

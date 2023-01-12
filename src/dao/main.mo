@@ -37,7 +37,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
   private stable var _stakedTime = stakedTime;
   private stable var proposalId:Nat32 = 1;
   private stable var voteId:Nat32 = 1;
-  private stable var totalTokensSpent:Nat = 0;
+  private stable var totalTokensStaked:Nat = 0;
   private stable var proposal:?Proposal = null;
   private var _proposalCost:Nat = proposalCost;
 
@@ -148,6 +148,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
           amount = staked.amount+value;
           timeStamp = null
         };
+        totalTokensStaked := totalTokensStaked + _staked.amount;
         stake.put(caller,_staked);
         return #Ok(value);
       };
@@ -191,6 +192,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               amount = staked.amount-value;
               timeStamp = null
             };
+            totalTokensStaked := totalTokensStaked - value;
             stake.put(caller,_staked);
             return #Ok(value);
           };
@@ -230,6 +232,18 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
         0
       }
     };
+  };
+
+  private func _canVote(owner:Principal) : Bool {
+    let exist = _getStake(owner).timeStamp;
+    switch(exist){
+      case(?exist){
+        false
+      };
+      case(null){
+        true
+      };
+    }
   };
 
   public shared({caller}) func executeProposal(): async () {
@@ -310,8 +324,8 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               description = obj.description;
               source = obj.source;
               hash = obj.hash;
-              yay = 0;
-              nay = 0;
+              yay = 0.0;
+              nay = 0.0;
               executed = false;
               executedAt = null;
               timeStamp = Time.now();
@@ -330,8 +344,8 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               vote = obj.vote;
               title = obj.title;
               description = obj.description;
-              yay = 0;
-              nay = 0;
+              yay = 0.0;
+              nay = 0.0;
               executed = false;
               executedAt = null;
               timeStamp = Time.now();
@@ -349,8 +363,8 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               request = obj.request;
               title = obj.title;
               description = obj.description;
-              yay = 0;
-              nay = 0;
+              yay = 0.0;
+              nay = 0.0;
               executed = false;
               executedAt = null;
               timeStamp = Time.now();
@@ -368,8 +382,8 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               amount = obj.amount;
               title = obj.title;
               description = obj.description;
-              yay = 0;
-              nay = 0;
+              yay = 0.0;
+              nay = 0.0;
               executed = false;
               executedAt = null;
               timeStamp = Time.now();
@@ -385,8 +399,17 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
     };
   };
 
-  public shared({caller}) func vote(proposalId:Nat32, power:Nat, yay:Bool): async TokenService.TxReceipt {
+  public shared({caller}) func vote(proposalId:Nat32,yay:Bool): async TokenService.TxReceipt {
     ignore _topUp();
+    let stakedTokens = _getStakedAmount(caller);
+    assert(stakedTokens > 0);
+    let canVote = _canVote(caller);
+    assert(canVote);
+    let isVoted = _voted(proposalId, caller);
+    assert(isVoted == false);
+    let _totalStaked = Utils.natToFloat(totalTokensStaked);
+    let _stakedTokens = Utils.natToFloat(stakedTokens);
+    let power = (_stakedTokens / _totalStaked) * 100;
     let vote = {
       proposalId = proposalId;
       yay = yay;
@@ -403,7 +426,28 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
     #Ok(Nat32.toNat(currentId));
   };
 
-  private func _vote(proposalId:Nat32, power:Nat, yay:Bool) {
+  private func _voted(id:Nat32, owner:Principal): Bool {
+    let exist = proposalVotes.get(id);
+    switch(exist){
+      case(?exist){
+        let member = Principal.toText(owner);
+        let myVote = Array.find(exist,func(e:Vote):Bool{e.member == member});
+        switch(myVote){
+          case(?myVote){
+            return true;
+          };
+          case(null){
+            return false;
+          };
+        }
+      };
+      case(null){
+        false;
+      };
+    };
+  };
+
+  private func _vote(proposalId:Nat32, power:Float, yay:Bool) {
     let exist = proposal;
     switch(exist){
       case(?exist){

@@ -316,7 +316,7 @@ module {
         map.put("proposalId", #Number(Nat32.toNat(value.proposalId)));
         map.put("yay", #Boolean(value.yay));
         map.put("member", #String(value.member));
-        map.put("power", #Number(value.power));
+        map.put("power", #String(Float.toText(value.power)));
         map.put("timeStamp", #Number(value.timeStamp));
 
         #Object(map);
@@ -363,8 +363,8 @@ module {
                 map.put("description", #String(_toHex(value.description)));
                 map.put("source", #String(value.source));
                 map.put("hash", #String(value.hash));
-                map.put("yay", #Number(value.yay));
-                map.put("nay", #Number(value.nay));
+                map.put("yay", #String(Float.toText(value.yay)));
+                map.put("nay", #String(Float.toText(value.nay)));
                 map.put("executed", #Boolean(value.executed));
                 map.put("timeStamp", #Number(value.timeStamp))
             };
@@ -385,8 +385,8 @@ module {
                 map.put("title", #String(value.title));
                 map.put("description", #String(_toHex(value.description)));
                 map.put("vote", #Boolean(value.vote));
-                map.put("yay", #Number(value.yay));
-                map.put("nay", #Number(value.nay));
+                map.put("yay", #String(Float.toText(value.yay)));
+                map.put("nay", #String(Float.toText(value.nay)));
                 map.put("executed", #Boolean(value.executed));
                 map.put("timeStamp", #Number(value.timeStamp))
             };
@@ -457,8 +457,8 @@ module {
                 map.put("title", #String(value.title));
                 map.put("description", #String(_toHex(value.description)));
                 map.put("request", requestDraft);
-                map.put("yay", #Number(value.yay));
-                map.put("nay", #Number(value.nay));
+                map.put("yay", #String(Float.toText(value.yay)));
+                map.put("nay", #String(Float.toText(value.nay)));
                 map.put("executed", #Boolean(value.executed));
                 map.put("timeStamp", #Number(value.timeStamp))
             };
@@ -478,8 +478,8 @@ module {
                 map.put("title", #String(value.title));
                 map.put("description", #String(_toHex(value.description)));
                 map.put("amount", #Number(value.amount));
-                map.put("yay", #Number(value.yay));
-                map.put("nay", #Number(value.nay));
+                map.put("yay", #String(Float.toText(value.yay)));
+                map.put("nay", #String(Float.toText(value.nay)));
                 map.put("executed", #Boolean(value.executed));
                 map.put("timeStamp", #Number(value.timeStamp))
             };
