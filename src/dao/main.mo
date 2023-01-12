@@ -296,8 +296,8 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               description = obj.description;
               source = obj.source;
               hash = obj.hash;
-              yay = 0.0;
-              nay = 0.0;
+              yay = 0;
+              nay = 0;
               executed = false;
               executedAt = null;
               timeStamp = Time.now();
@@ -316,8 +316,8 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               vote = obj.vote;
               title = obj.title;
               description = obj.description;
-              yay = 0.0;
-              nay = 0.0;
+              yay = 0;
+              nay = 0;
               executed = false;
               executedAt = null;
               timeStamp = Time.now();
@@ -335,8 +335,8 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               request = obj.request;
               title = obj.title;
               description = obj.description;
-              yay = 0.0;
-              nay = 0.0;
+              yay = 0;
+              nay = 0;
               executed = false;
               executedAt = null;
               timeStamp = Time.now();
@@ -354,8 +354,8 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               amount = obj.amount;
               title = obj.title;
               description = obj.description;
-              yay = 0.0;
-              nay = 0.0;
+              yay = 0;
+              nay = 0;
               executed = false;
               executedAt = null;
               timeStamp = Time.now();
@@ -379,14 +379,11 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
     assert(canVote);
     let isVoted = _voted(proposalId, caller);
     assert(isVoted == false);
-    let _totalStaked = Utils.natToFloat(totalTokensStaked);
-    let _stakedTokens = Utils.natToFloat(stakedTokens);
-    let power = (_stakedTokens / _totalStaked) * 100;
     let vote = {
       proposalId = proposalId;
       yay = yay;
       member = Principal.toText(caller);
-      power = power;
+      power = stakedTokens;
       timeStamp = Time.now();
     };
     //credit vote
@@ -394,7 +391,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
     voteId := voteId+1;
     votes.put(voteId,vote);
     _addVoteToProposal(proposalId, vote);
-    ignore _vote(proposalId, power, yay);
+    ignore _vote(proposalId, stakedTokens, yay);
     #Ok(Nat32.toNat(currentId));
   };
 
@@ -419,7 +416,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
     };
   };
 
-  private func _vote(proposalId:Nat32, power:Float, yay:Bool): async () {
+  private func _vote(proposalId:Nat32, power:Nat, yay:Bool): async () {
     let exist = proposal;
     switch(exist){
       case(?exist){
@@ -581,20 +578,22 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
   };
 
   public func _tally(): async () {
+    let _totalStaked = Utils.natToFloat(totalTokensStaked);
+    let majority =  _totalStaked * 0.5;
     switch(proposal){
       case(?proposal){
         switch(proposal){
           case(#upgrade(value)){
-            if(value.yay > value.nay) {
+            if(Utils.natToFloat(value.yay) > majority) {
               //accepted
               accepted.put(value.id,#upgrade(value));      
-            }else {
+            }else if (Utils.natToFloat(value.nay) > majority) {
               rejected.put(value.id,#upgrade(value));
               //rejected
             }
           };
           case(#treasury(value)){
-            if(value.yay > value.nay) {
+            if(Utils.natToFloat(value.yay) > majority) {
               //accepted
               var _proposal = {
                 id = value.id;
@@ -613,7 +612,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               //make call to treasury cansiter that should be blackedhole
               //Add This Back
               ignore TreasuryService.approveRequest(value.treasuryRequestId);
-            }else {
+            }else if(Utils.natToFloat(value.nay) > majority){
               var _proposal = {
                 id = value.id;
                 treasuryRequestId = value.treasuryRequestId;
@@ -631,7 +630,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
             }
           };
           case(#treasuryAction(value)) {
-            if(value.yay > value.nay) {
+            if(Utils.natToFloat(value.yay) > majority) {
               //accepted
               var _proposal = {
                 id = value.id;
@@ -648,7 +647,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               accepted.put(value.id,#treasuryAction(_proposal));
               //make call to treasury cansiter that should be blackedhole
               ignore TreasuryService.createRequest(value.id,value.request);
-            }else {
+            }else if(Utils.natToFloat(value.nay) > majority){
               var _proposal = {
                 id = value.id;
                 creator = value.creator;
@@ -665,7 +664,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
             }
           };
           case(#proposalCost(value)) {
-            if(value.yay > value.nay) {
+            if(Utils.natToFloat(value.yay) > majority) {
               //accepted
               var _proposal = {
                 id = value.id;
@@ -681,7 +680,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               };
               accepted.put(value.id,#proposalCost(_proposal));
               _proposalCost := value.amount;
-            }else {
+            }else if(Utils.natToFloat(value.nay) > majority){
               var _proposal = {
                 id = value.id;
                 creator = value.creator;

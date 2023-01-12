@@ -32,8 +32,8 @@ module {
         amount:Nat;
         title:Text;
         description:Text;
-        yay:Float;
-        nay:Float;
+        yay:Nat;
+        nay:Nat;
         executed:Bool;
         executedAt:?Time.Time;
         timeStamp:Time.Time;
@@ -51,8 +51,8 @@ module {
         request:RequestDraft;
         title:Text;
         description:Text;
-        yay:Float;
-        nay:Float;
+        yay:Nat;
+        nay:Nat;
         executed:Bool;
         executedAt:?Time.Time;
         timeStamp:Time.Time;
@@ -75,8 +75,8 @@ module {
         description:Text;
         source:Text;
         hash:Text;
-        yay:Float;
-        nay:Float;
+        yay:Nat;
+        nay:Nat;
         executed:Bool;
         executedAt:?Time.Time;
         timeStamp:Time.Time;
@@ -105,8 +105,8 @@ module {
         vote:Bool;
         title:Text;
         description:Text;
-        yay:Float;
-        nay:Float;
+        yay:Nat;
+        nay:Nat;
         executed:Bool;
         executedAt:?Time.Time;
         timeStamp:Time.Time;
