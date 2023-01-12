@@ -611,7 +611,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               accepted.put(value.id,#treasury(_proposal));
               //make call to treasury cansiter that should be blackedhole
               //Add This Back
-              ignore TreasuryService.approveRequest(value.treasuryRequestId);
+              ignore TreasuryService.approveRequest(value.treasuryRequestId, _treasury);
             }else if(Utils.natToFloat(value.nay) > majority){
               var _proposal = {
                 id = value.id;
@@ -646,7 +646,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               };
               accepted.put(value.id,#treasuryAction(_proposal));
               //make call to treasury cansiter that should be blackedhole
-              ignore TreasuryService.createRequest(value.id,value.request);
+              ignore TreasuryService.createRequest(value.id,value.request, _treasury);
             }else if(Utils.natToFloat(value.nay) > majority){
               var _proposal = {
                 id = value.id;
