@@ -94,9 +94,18 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
       Cycles.balance();
   };
 
+   public query func totalStaked(): async Nat {
+    totalTokensStaked
+   };
+
   public query func getStake(owner:Principal): async Stake {
     _getStake(owner)
   };
+
+  public query func getStakedAmount(owner:Principal): async Nat {
+    _getStakedAmount(owner)
+  };
+
 
   public query func getProposal(): async ?Proposal {
       proposal;
@@ -134,18 +143,18 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
     }
   };
 
-  public shared({caller}) func stakeTokens(value:Nat): async TokenService.TxReceipt {
+  public shared({caller}) func stakeTokens(amount:Nat): async TokenService.TxReceipt {
     let staked = _getStake(caller);
     let daoCanister = Principal.fromActor(this);
     let allowance = await TokenService.allowance(caller, daoCanister, _token);
-    if(allowance < value){
+    if(allowance < amount){
       return #Err(#InsufficientAllowance);
     };
-    let result = await TokenService.transferFrom(caller, daoCanister, value, _token);
+    let result = await TokenService.transferFrom(caller, daoCanister, amount, _token);
     switch(result){
       case(#Ok(value)){
         let _staked = {
-          amount = staked.amount+value;
+          amount = staked.amount+amount;
           timeStamp = null
         };
         totalTokensStaked := totalTokensStaked + _staked.amount;
@@ -177,22 +186,22 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
     };
   };
 
-  public shared({caller}) func unStakeTokens(value:Nat): async TokenService.TxReceipt {
+  public shared({caller}) func unStakeTokens(amount:Nat): async TokenService.TxReceipt {
     let now = Time.now();
     let staked = _getStake(caller);
     let timeStamp = staked.timeStamp;
-    assert(value <= staked.amount);
+    assert(amount <= staked.amount);
     switch(timeStamp){
       case(?timeStamp){
         assert(timeStamp+stakedTime < now);
-        let result = await TokenService.transfer(caller, value, _token);
+        let result = await TokenService.transfer(caller, amount, _token);
         switch(result){
           case(#Ok(value)){
             let _staked = {
-              amount = staked.amount-value;
+              amount = staked.amount-amount;
               timeStamp = null
             };
-            totalTokensStaked := totalTokensStaked - value;
+            totalTokensStaked := totalTokensStaked - amount;
             stake.put(caller,_staked);
             return #Ok(value);
           };
@@ -577,12 +586,12 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
     };
   };
 
-  public func _tally(): async () {
+  private func _tally(): async () {
     let _totalStaked = Utils.natToFloat(totalTokensStaked);
     let majority =  _totalStaked * 0.5;
     switch(proposal){
-      case(?proposal){
-        switch(proposal){
+      case(?_proposal){
+        switch(_proposal){
           case(#upgrade(value)){
             if(Utils.natToFloat(value.yay) > majority) {
               //accepted
@@ -680,6 +689,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
               };
               accepted.put(value.id,#proposalCost(_proposal));
               _proposalCost := value.amount;
+              proposal := null;
             }else if(Utils.natToFloat(value.nay) > majority){
               var _proposal = {
                 id = value.id;
@@ -694,6 +704,7 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
                 timeStamp = value.timeStamp;
               };
               rejected.put(value.id,#proposalCost(_proposal));
+              proposal := null;
             }
           };
         };
@@ -702,7 +713,6 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
 
       }
     };
-    proposal := null;
   };
 
   private func _upgradeController(wasm:Blob, arg:Blob, canisterId:Text): async () {
