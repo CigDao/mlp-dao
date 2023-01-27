@@ -740,6 +740,11 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
                 case ("getVote") return _voteResponse(path[1]);
                 case (_) return return Http.BAD_REQUEST();
             };
+        }else if (path.size() == 3) {
+            switch (path[0]) {
+                case ("voted") return _votedResponse(path[1], path[2]);
+                case (_) return return Http.BAD_REQUEST();
+            };
         }else {
             return Http.BAD_REQUEST();
         };
@@ -754,6 +759,19 @@ actor class Dao(token:Text, treasury:Text, topup:Text, proposalCost:Nat, stakedT
             body               = blob;
             streaming_strategy = null;
         };
+    };
+
+    private func _votedResponse(proposalId:Text, owner:Text) : Http.Response {
+      let id = Utils.textToNat32(proposalId);
+      let value = _voted(id, Principal.fromText(owner));
+      let json = #Boolean(value);
+      let blob = Text.encodeUtf8(JSON.show(json));
+      let response: Http.Response = {
+          status_code        = 200;
+          headers            = [("Content-Type", "application/json")];
+          body               = blob;
+          streaming_strategy = null;
+      };
     };
 
     private func _fetchAcceptedProposals(): [Proposal] {
